@@ -9,6 +9,8 @@ class CustomUser(AbstractUser):
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, db_index=True)
     email = models.EmailField(unique=True, db_index=True) 
     phone = models.PositiveIntegerField(unique=True, db_index=True)
+    is_email_verified = models.BooleanField(default=False)
+    is_phone_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -16,6 +18,33 @@ class CustomUser(AbstractUser):
         indexes = [
             models.Index(fields=['user_type', 'email']),
         ]
+
+class EmailOTP(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_index=True)
+    email = models.EmailField()
+    otp = models.CharField(max_length=6)
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['email', 'created_at']),
+        ]
+
+class PhoneOTP(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_index=True)
+    phone = models.PositiveIntegerField()
+    otp = models.CharField(max_length=6) 
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['phone', 'created_at']),
+        ]
+
 
 class Application(models.Model):
     APPLICATION_STATUS_CHOICES = [
@@ -38,7 +67,11 @@ class PersonalInfo(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, db_index=True)
     profile_image = models.ImageField(upload_to='user_profile_images/')
     dob = models.DateField(db_index=True)
-    gender = models.CharField(max_length=10)
+    GENDER_CHOICES = [
+        ('female', 'Female'),
+        ('transgender', 'Transgender')
+    ]
+    gender = models.CharField(max_length=11, choices=GENDER_CHOICES)
     nationality = models.CharField(max_length=100)
     religion = models.CharField(max_length=100)
     aadhar_card = models.PositiveIntegerField(unique=True, db_index=True)
@@ -65,7 +98,17 @@ class PersonalInfo(models.Model):
     currentAddress_City = models.CharField(max_length=100)
     currentAddress_PinCode = models.PositiveIntegerField(unique=True, db_index=True)
     currentAddress_Address = models.TextField()
-    blood_group = models.CharField(max_length=10)
+    BLOOD_GROUP_CHOICES = [
+        ('A+', 'A Positive'),
+        ('A-', 'A Negative'),
+        ('B+', 'B Positive'), 
+        ('B-', 'B Negative'),
+        ('O+', 'O Positive'),
+        ('O-', 'O Negative'),
+        ('AB+', 'AB Positive'),
+        ('AB-', 'AB Negative'),
+    ]
+    blood_group = models.CharField(max_length=10, choices=BLOOD_GROUP_CHOICES)
     casteCategory = models.CharField(max_length=100, db_index=True)
     caste = models.CharField(max_length=100)
     caste_or_ews_certificate_issued_by = models.CharField(max_length=100)
@@ -73,6 +116,15 @@ class PersonalInfo(models.Model):
     caste_or_ews_certificate_image = models.ImageField(upload_to='caste_or_ews_certificates/')
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.is_same_as_permanentAddress:
+            self.currentAddress_Country = self.permanentAddress_Country
+            self.currentAddress_State = self.permanentAddress_State
+            self.currentAddress_City = self.permanentAddress_City
+            self.currentAddress_PinCode = self.permanentAddress_PinCode
+            self.currentAddress_Address = self.permanentAddress_Address
+        super().save(*args, **kwargs)
 
     class Meta:
         indexes = [
@@ -123,6 +175,13 @@ class EducationInfo(models.Model):
         if self.extra_curricular_activities:
             return self.extra_curricular_activities.split(',')
         return []
+
+    def calculate_percentage(self):
+        if self.intermediate_total_marks > 0:
+            percentage = (self.intermediate_obtained_marks / self.intermediate_total_marks) * 100
+            self.intermediate_percentage = round(percentage, 2)
+            return self.intermediate_percentage
+        return 0.0
 
     class Meta:
         indexes = [
