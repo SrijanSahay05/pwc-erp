@@ -177,3 +177,11 @@ EMAIL_USE_TLS = False
 
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
+
+CELERY_BEAT_SCHEDULE = {
+    'delete_unverified_accounts': {
+        'task': 'users.tasks.delete_unverified_accounts',  # Replace 'your_app_name'
+        'schedule': timedelta(hours=1),  # Run every hour
+    },
+}
