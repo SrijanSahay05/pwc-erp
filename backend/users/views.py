@@ -11,9 +11,10 @@ from django.db import transaction
 import random
 import datetime
 import logging
+from rest_framework.permissions import IsAuthenticated
 
-from .serializers import CustomUserSerializer
-from .models import CustomUser, EmailOTP, PhoneOTP
+from .serializers import CustomUserSerializer, PersonalInfoSerializer, EducationInfoSerializer
+from .models import CustomUser, EmailOTP, PhoneOTP, PersonalInfo, EducationInfo
 
 logger = logging.getLogger(__name__)  # Logging for error tracking
 
@@ -96,6 +97,29 @@ class LoginView(APIView):
             return Response({'error': 'Invalid credentials'},
                             status=status.HTTP_401_UNAUTHORIZED)
 
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """Logout user by blacklisting the refresh token"""
+        print("LogoutView - post called")  # Line to remove before prod
+        try:
+            refresh_token = request.data.get('refresh')
+            if not refresh_token:
+                print("LogoutView - Refresh token not provided")  # Line to remove before prod
+                return Response({'error': 'Refresh token is required'}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            
+            print(f"LogoutView - User {request.user.username} logged out successfully")  # Line to remove before prod
+            return Response({'message': 'Logged out successfully'}, 
+                          status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f"LogoutView - Error: {str(e)}")  # Line to remove before prod
+            return Response({'error': 'Invalid token'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
 
 class EmailVerificationView(APIView):
     def post(self, request):
@@ -310,3 +334,52 @@ class ResetPasswordView(APIView):
 
         print(f"ResetPasswordView - User not found for email: {email}")  # Line to remove before prod
         return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
+class PersonalInfoView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, *args, **kwargs):
+        """Retrieve personal information."""
+        personal_info, created = PersonalInfo.objects.get_or_create(user=request.user)
+        serializer = PersonalInfoSerializer(personal_info)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        """Create new personal information."""
+        serializer = PersonalInfoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, *args, **kwargs):
+        """Update personal information."""
+        personal_info = PersonalInfo.objects.get_or_create(user=request.user)[0]
+        serializer = PersonalInfoSerializer(personal_info, data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, *args, **kwargs):
+        """Partially update personal information."""
+        personal_info = PersonalInfo.objects.get_or_create(user=request.user)[0]
+        serializer = PersonalInfoSerializer(personal_info, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class EducationInfoView(generics.RetrieveUpdateAPIView):
+    """
+    API view for managing education information.
+    GET: Retrieve education information
+    PUT/PATCH: Update education information
+    """
+    serializer_class = EducationInfoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return EducationInfo.objects.get_or_create(user=self.request.user)[0]
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)

@@ -75,7 +75,7 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {
             'user': {'required': True},
-            'profile_image': {'required': True},
+            # 'profile_image': {'required': True},
             'dob': {'required': True},
             'gender': {'required': True},
             'nationality': {'required': True},
@@ -113,3 +113,60 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
+
+
+class EducationInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EducationInfo
+        fields = (
+            'user', 'is_appearing', 'intermediate_school_name', 'intermediate_school_board',
+            'intermdiate_grade', 'intermediaate_roll_number', 'intermediate_obtained_marks',
+            'intermediate_total_marks', 'intermediate_percentage', 'intermediate_year_of_passing',
+            'intermediate_certificate_image', 'lastappearingexam_institution_name',
+            'lastappearingexam_place', 'lastappearingexam_board', 'lastappearingexam_year_of_passing',
+            'lastappearingexam_marksheet_image', 'extra_curricular_activities',
+            'created_at', 'updated_at'
+        )
+        extra_kwargs = {
+            'user': {'required': True},
+            'intermediate_school_name': {'required': True},
+            'intermediate_school_board': {'required': True}, 
+            'intermdiate_grade': {'required': True},
+            'intermediaate_roll_number': {'required': True},
+            'intermediate_obtained_marks': {'required': True},
+            'intermediate_total_marks': {'required': True},
+            'intermediate_certificate_image': {'required': True},
+            'lastappearingexam_institution_name': {'required': True},
+            'lastappearingexam_place': {'required': True},
+            'lastappearingexam_board': {'required': True},
+            'lastappearingexam_year_of_passing': {'required': True},
+            'lastappearingexam_marksheet_image': {'required': True}
+        }
+
+    def validate(self, attrs):
+        # Validate extra curricular activities choices
+        valid_activities = ['NCC', 'LITERACY', 'NSS', 'ATHLETICS', 'CULTURAL', 'ENVIRONMENT', 'GAMES']
+        if attrs.get('extra_curricular_activities'):
+            activities = attrs['extra_curricular_activities'].split(',')
+            for activity in activities:
+                if activity not in valid_activities:
+                    raise serializers.ValidationError({"extra_curricular_activities": f"Invalid activity: {activity}"})
+
+        # Calculate percentage if not provided
+        if not attrs.get('intermediate_percentage'):
+            obtained = attrs.get('intermediate_obtained_marks', 0)
+            total = attrs.get('intermediate_total_marks', 0)
+            if total > 0:
+                attrs['intermediate_percentage'] = round((obtained / total) * 100, 2)
+
+        return attrs
+
+    def create(self, validated_data):
+        education_info = EducationInfo.objects.create(**validated_data)
+        return education_info
+
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
+
+
+
