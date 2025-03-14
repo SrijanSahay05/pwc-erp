@@ -1,121 +1,116 @@
-# API Guide
+# API Guide <br><br>
 
-## 1. Register Endpoint
-### POST REQUEST
-POST http://localhost:8000/api/users/register/
--H "Content-Type: application/json"
--d '{
-    "first_name": "<string>",
-    "last_name": "<string>",
-    "username": "<string>",
-    "email": "<string>",
-    "phone": "<integer>",   
-    "user_type": "<string>",  // e.g., "admin", "applicant", use "applicant" as default value
-    "password": "<string>",
-    "password2": "<string>"
-}'
+## 1. Register Endpoint <br>
+### POST REQUEST <br>
+POST http://localhost:8000/api/users/register/ <br>
+-H "Content-Type: application/json" <br>
+-d '{ <br>
+    "first_name": "<string>", <br>
+    "last_name": "<string>", <br>
+    "username": "<string>", <br>
+    "email": "<string>", <br>
+    "phone": "<integer>", <br>   
+    "user_type": "<string>",  // e.g., "admin", "applicant", use "applicant" as default value <br>
+    "password": "<string>", <br>
+    "password2": "<string>" <br>
+}' <br><br>
 
+### RESPONSE <br>
+{ <br>
+  "user": { <br>
+    "id": "<integer>", <br>
+    "username": "<string>", <br>
+    "first_name": "<string>", <br>
+    "last_name": "<string>", <br>
+    "email": "<string>", <br>
+    "phone": "<integer>", <br>
+    "user_type": "<string>",  // e.g., "admin", "applicant" <br>
+    "created_at": "<datetime>", // e.g., "2025-03-14T01:04:14.319043+05:30" <br>
+    "updated_at": "<datetime>"  // e.g., "2025-03-14T01:04:14.319052+05:30" <br>
+  }, <br>
+  "refresh": "<string>",  // JWT refresh token <br>
+  "access": "<string>"     // JWT access token <br>
+} <br><br>
 
-### RESPONSE
-{
-  "user": {
-    "id": "<integer>",
-    "username": "<string>",
-    "first_name": "<string>",
-    "last_name": "<string>",
-    "email": "<string>",
-    "phone": "<integer>",
-    "user_type": "<string>",  // e.g., "admin", "applicant"
-    "created_at": "<datetime>", // e.g., "2025-03-14T01:04:14.319043+05:30"
-    "updated_at": "<datetime>"  // e.g., "2025-03-14T01:04:14.319052+05:30"
-  },
-  "refresh": "<string>",  // JWT refresh token
-  "access": "<string>"     // JWT access token
-}
+## 2. Login Endpoint <br>
+### POST REQUEST <br>
+POST http://localhost:8000/api/users/login/ <br>
+-H "Content-Type: application/json" <br>
+-d '{ <br>
+    "username": "<string>", <br>
+    "password": "<string>" <br>
+}' <br><br>
 
-## 2. Login Endpoint
-### POST REQUEST
-POST http://localhost:8000/api/users/login/
--H "Content-Type: application/json"
--d '{
-    "username": "<string>",
-    "password": "<string>"
-}'
+### RESPONSE <br>
+{ <br>
+  "user": { <br>
+    "id": "<integer>", <br>
+    "username": "<string>", <br>
+    "first_name": "<string>", <br>
+    "last_name": "<string>", <br>
+    "email": "<string>", <br>
+    "phone": "<integer>", <br>
+    "user_type": "<string>",  // e.g., "admin", "applicant" <br>
+    "created_at": "<datetime>", // e.g., "2025-03-14T01:04:14.319043+05:30" <br>
+    "updated_at": "<datetime>"  // e.g., "2025-03-14T01:13:16.038972+05:30" <br>
+  }, <br>
+  "refresh": "<string>",  // JWT refresh token <br>
+  "access": "<string>"     // JWT access token <br>
+} <br><br>
 
-### RESPONSE
-{
-  "user": {
-    "id": "<integer>",
-    "username": "<string>",
-    "first_name": "<string>",
-    "last_name": "<string>",
-    "email": "<string>",
-    "phone": "<integer>",
-    "user_type": "<string>",  // e.g., "admin", "applicant"
-    "created_at": "<datetime>", // e.g., "2025-03-14T01:04:14.319043+05:30"
-    "updated_at": "<datetime>"  // e.g., "2025-03-14T01:13:16.038972+05:30"
-  },
-  "refresh": "<string>",  // JWT refresh token
-  "access": "<string>"     // JWT access token
-}
+## 3. Token Refresh <br><br>
 
-## 3. Token Refresh
+## 4. Email Verification <br>
+### POST REQUEST <br>
+POST http://localhost:8000/api/users/verify-email/ <br>
+-H "Content-Type: application/json" <br>
+-d '{"email":"<string>"}' <br><br>
+### RESPONSE <br>
+{"message":"OTP sent successfully"} <br><br>
 
+### PUT REQUEST <br>
+PUT http://localhost:8000/api/users/verify-email/ <br>
+-H "Content-Type: application/json" <br>
+-d '{ <br>
+  "email": "<string>", <br>
+  "otp": "<string>" <br>
+}' <br><br>
+### RESPONSE <br>
+{"message":"Email verified successfully"} <br><br>
 
+## 5. Phone Verification <br>
+### POST REQUEST <br>
+POST http://localhost:8000/api/users/verify-phone/ <br>
+-H "Content-Type: application/json" <br>
+-d '{"phone":"<integer>"}' // This might be a <string> <br><br>
+### RESPONSE <br>
+{"message":"OTP sent successfully"} <br><br>
 
-## 4. Email Verification 
-### POST REQUEST
-POST http://localhost:8000/api/users/verify-email/
--H "Content-Type: application/json"
--d '{"email":"<string>"}'
-### RESPONSE 
-{"message":"OTP sent successfully"}
+### PUT REQUEST <br>
+PUT http://localhost:8000/api/users/verify-phone/ <br>
+-H "Content-Type: application/json" <br>
+-d '{ <br>
+  "phone": "<string>", <br>
+  "otp": "<string>" <br>
+}' <br><br>
+### RESPONSE <br>
+{"message":"Phone verified successfully"} <br><br>
 
-### PUT REQUEST
-PUT http://localhost:8000/api/users/verify-email/
--H "Content-Type: application/json"
--d '{
-  "email": "<string>",
-  "otp": "<string>"
-}'
-### RESPONSE
-{"message":"Email verified successfully"}
+## 6. Reset Password <br>
+### POST REQUEST <br>
+POST http://localhost:8000/api/users/reset-password/ <br>
+-H "Content-Type: application/json" <br>
+-d '{ <br>
+    "email": "<string>", <br>
+}' <br><br>
+### RESPONSE <br>
+{"message":"Password reset OTP sent successfully"} <br><br>
 
-## 5. Phone Verification 
-POST http://localhost:8000/api/users/verify-phone/
--H "Content-Type: application/json"
--d '{"phone":"<integer>"}' // This might be a <string>
-### RESPONSE
-{"message":"OTP sent successfully"}
-
-### PUT REQUEST
-PUT http://localhost:8000/api/users/verify-email/
--H "Content-Type: application/json"
--d '{
-  "email": "<string>",
-  "otp": "<string>"
-}'
-### RESPONSE
-{"message":"Phone verified successfully"}
-
-
-## 6. Reset Password
-POST http://localhost:8000/api/users/reset-password/
--H "Content-Type: application/json"
--d '{
-    "email": "<string>",
-}'
-### RESPONSE
-{"message":"Password reset OTP sent successfully"}
-
-### PUT REQUEST
-PUT http://localhost:8000/api/users/reset-password/
--H "Content-Type: application/json"
--d '{
-  "email": "<string>",
-  "otp": "<string>",
-  "new_password": "<string>"
-}'
-
-
-
+### PUT REQUEST <br>
+PUT http://localhost:8000/api/users/reset-password/ <br>
+-H "Content-Type: application/json" <br>
+-d '{ <br>
+  "email": "<string>", <br>
+  "otp": "<string>", <br>
+  "new_password": "<string>" <br>
+}' <br><br>
