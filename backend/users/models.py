@@ -26,7 +26,8 @@ class EmailOTP(models.Model):
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
-
+    def __str__(self):
+        return f"{self.user.email} OTP"
     class Meta:
         indexes = [
             models.Index(fields=['email', 'created_at']),
@@ -39,7 +40,8 @@ class PhoneOTP(models.Model):
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
-
+    def __str__(self):
+        return f"{self.user.phone} OTP"
     class Meta:
         indexes = [
             models.Index(fields=['phone', 'created_at']),
@@ -57,7 +59,8 @@ class Application(models.Model):
     application_status = models.CharField(max_length=10, choices=APPLICATION_STATUS_CHOICES, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
     class Meta:
         indexes = [
             models.Index(fields=['application_status', 'created_at']),
@@ -65,7 +68,7 @@ class Application(models.Model):
 
 class PersonalInfo(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, db_index=True)
-    profile_image = models.ImageField(upload_to='user_profile_images/')
+    profile_image = models.ImageField(upload_to='user_profile_images/', blank=True, null=True)
     dob = models.DateField(db_index=True)
     GENDER_CHOICES = [
         ('female', 'Female'),
@@ -90,13 +93,13 @@ class PersonalInfo(models.Model):
     permanentAddress_Country = models.CharField(max_length=100)
     permanentAddress_State = models.CharField(max_length=100)
     permanentAddress_City = models.CharField(max_length=100)
-    permanentAddress_PinCode = models.PositiveIntegerField(unique=True, db_index=True)
+    permanentAddress_PinCode = models.PositiveIntegerField(db_index=True)
     permanentAddress_Address = models.TextField()
     is_same_as_permanentAddress = models.BooleanField(default=False)
     currentAddress_Country = models.CharField(max_length=100)
     currentAddress_State = models.CharField(max_length=100)
     currentAddress_City = models.CharField(max_length=100)
-    currentAddress_PinCode = models.PositiveIntegerField(unique=True, db_index=True)
+    currentAddress_PinCode = models.PositiveIntegerField(db_index=True)
     currentAddress_Address = models.TextField()
     BLOOD_GROUP_CHOICES = [
         ('A+', 'A Positive'),
@@ -113,7 +116,7 @@ class PersonalInfo(models.Model):
     caste = models.CharField(max_length=100)
     caste_or_ews_certificate_issued_by = models.CharField(max_length=100)
     caste_or_ews_certificate_number = models.PositiveIntegerField(unique=True, db_index=True)
-    caste_or_ews_certificate_image = models.ImageField(upload_to='caste_or_ews_certificates/')
+    caste_or_ews_certificate_image = models.ImageField(upload_to='caste_or_ews_certificates/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -125,7 +128,9 @@ class PersonalInfo(models.Model):
             self.currentAddress_PinCode = self.permanentAddress_PinCode
             self.currentAddress_Address = self.permanentAddress_Address
         super().save(*args, **kwargs)
-
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
+    
     class Meta:
         indexes = [
             models.Index(fields=['casteCategory', 'created_at']),
@@ -182,7 +187,8 @@ class EducationInfo(models.Model):
             self.intermediate_percentage = round(percentage, 2)
             return self.intermediate_percentage
         return 0.0
-
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
     class Meta:
         indexes = [
             models.Index(fields=['intermediate_percentage', 'intermediate_year_of_passing']),
