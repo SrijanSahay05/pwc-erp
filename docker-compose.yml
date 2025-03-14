@@ -11,7 +11,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://209.38.124.151/api
+      - VITE_API_URL=http://209.38.124.151/
     depends_on:
       - backend
     command: npm run dev -- --host 0.0.0.0
