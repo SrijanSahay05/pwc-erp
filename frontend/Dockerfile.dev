@@ -3,14 +3,26 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Add necessary build tools and dependencies
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    git \
+    && npm install -g npm@latest
 
-# Install dependencies with better error handling
-COPY package*.json ./
-RUN npm install --legacy-peer-deps || (cat npm-debug.log && exit 1)
+# Create app directory and set permissions
+RUN mkdir -p /app/node_modules && \
+    chown -R node:node /app
+
+# Switch to non-root user
+USER node
+
+# Install dependencies
+COPY --chown=node:node package*.json ./
+RUN npm install
 
 # Copy the rest of the code
-COPY . .
+COPY --chown=node:node . .
 
 # Expose Vite dev server port
 EXPOSE 5173
