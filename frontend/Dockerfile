@@ -25,7 +25,7 @@ RUN npm install
 COPY --chown=node:node . .
 
 # Expose Vite dev server port
-EXPOSE 5173
+EXPOSE 3000
 
 # Start development server with host flag
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"] 
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
