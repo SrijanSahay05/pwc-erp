@@ -14,11 +14,20 @@ RUN apt-get update \
         gcc \
         python3-dev \
         libpq-dev \
+        netcat-traditional \
     && rm -rf /var/lib/apt/lists/*
+
+# Create directories and set permissions
+RUN mkdir -p /app/static /app/media \
+    && chmod 755 /app/static /app/media
 
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy entrypoint script
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Copy project
 COPY . .
@@ -26,5 +35,5 @@ COPY . .
 # Expose development server port
 EXPOSE 8000
 
-# Command will be overridden by docker-compose
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"] 

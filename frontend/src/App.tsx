@@ -23,6 +23,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   return <>{children}</>;
 };
 
+const DefaultRoute: React.FC = () => {
+  const token = localStorage.getItem('accessToken');
+  return <Navigate to={token ? "/dashboard" : "/login"} replace />;
+};
+
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -82,8 +87,8 @@ function App() {
           />
 
           {/* Default Route */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<DefaultRoute />} />
+          <Route path="*" element={<DefaultRoute />} />
         </Routes>
       </Router>
     </div>
